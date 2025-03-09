@@ -64,50 +64,24 @@ export default function Home() {
     setError(null);
     
     try {
-      // In a real implementation, you would send the image to your API endpoint
-      // that communicates with Together AI's Llama Vision model
       const imageData = capturedImage.split(',')[1]; // Remove the data URL prefix
       
       // This is where you would call your actual API endpoint
-      // const response = await fetch('/api/analyze-image', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({ image: imageData }),
-      // });
-      
-      // const data = await response.json();
-      // if (!response.ok) {
-      //   throw new Error(data.error || 'Failed to analyze image');
-      // }
-      
-      // For demonstration purposes, we'll simulate a response with a timeout
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simulate different responses based on random selection (for demo)
-      const categories: AnalysisResult[] = [
-        { 
-          category: 'recycle', 
-          color: 'bg-emerald-500',
-          explanation: 'This item appears to be recyclable. It looks like it\'s made of plastic or paper that can be processed in most recycling facilities. Make sure it\'s clean and dry before placing it in your recycling bin.' 
+      const response = await fetch('/api/analyze-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        { 
-          category: 'compost', 
-          color: 'bg-amber-700',
-          explanation: 'This item appears to be compostable. It looks like organic material that will break down naturally. Place it in your compost bin to be turned into nutrient-rich soil.' 
-        },
-        { 
-          category: 'trash', 
-          color: 'bg-slate-600',
-          explanation: 'This item should go in the trash. It appears to contain mixed materials that cannot be easily separated for recycling, or materials that are not accepted by most recycling programs.' 
-        }
-      ];
+        body: JSON.stringify({ image: imageData }),
+      });
       
-      // For demo purposes, randomly select a category
-      const result = categories[Math.floor(Math.random() * categories.length)];
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to analyze image');
+      }
       
-      setAnalysisResult(result);
+
+      setAnalysisResult(data);
     } catch (err) {
       console.error('Error analyzing image:', err);
       setError('Failed to analyze the image. Please try again.');
