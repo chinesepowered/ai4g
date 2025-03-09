@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import Together from 'together-ai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
 // Model selection constant - change this to switch between models
-const VISION_MODEL = 'TOGETHER'; // Options: 'TOGETHER' or 'GEMINI'
+const VISION_MODEL = 'GROQ'; // Options: 'GROQ', 'GEMINI'
 
 // Define the request type for TypeScript
 type AnalyzeImageRequest = {
   image: string;
-  model?: 'TOGETHER' | 'GEMINI'; // Optional model override in request
+  model?: 'GROQ' | 'GEMINI'; // Updated model options
 };
 
 // Define the response structure
@@ -51,9 +52,9 @@ export async function POST(request: Request) {
     
     let aiResponse = '';
     
-    // Process with either Together AI or Gemini based on selection
-    if (modelToUse === 'TOGETHER') {
-      aiResponse = await processWithTogetherAI(analyzePrompt, base64Image);
+    // Process with either Groq or Gemini based on selection
+    if (modelToUse === 'GROQ') {
+      aiResponse = await processWithGroq(analyzePrompt, base64Image);
     } else {
       aiResponse = await processWithGemini(analyzePrompt, base64Image);
     }
@@ -86,22 +87,33 @@ export async function POST(request: Request) {
 }
 
 /**
- * Process the image using Together AI's vision model
+ * Process the image using Groq's LLaMA 3.2 Vision model
  */
-async function processWithTogetherAI(prompt: string, base64Image: string): Promise<string> {
-  // Initialize the Together AI client
-  const together = new Together({
-    apiKey: process.env.TOGETHER_API_KEY,
+async function processWithGroq(prompt: string, base64Image: string): Promise<string> {
+  // Initialize the Groq client
+  const groq = new Groq({
+    apiKey: process.env.GROQ_KEY,
   });
   
-  // Make sure the image is in the correct format (base64 with data URI prefix)
-  const imageUrl = base64Image.startsWith('data:') 
-    ? base64Image 
-    : `data:image/jpeg;base64,${base64Image}`;
+  // Make sure the image is in the correct format for Groq
+  // Remove data URI prefix if present
+  let imageData = base64Image;
+  if (base64Image.includes(',')) {
+    imageData = base64Image.split(',')[1];
+  } else if (base64Image.startsWith('data:')) {
+    // Handle other formats of data URIs
+    const match = base64Image.match(/^data:[^;]+;base64,(.+)$/);
+    if (match) {
+      imageData = match[1];
+    }
+  }
+  
+  // Prepare the image URL with data URI format
+  const imageUrl = `data:image/jpeg;base64,${imageData}`;
 
-  // Call Together AI's chat completions API
-  const response = await together.chat.completions.create({
-    model: "meta-llama/Llama-Vision-Free",
+  // Call Groq's chat completions API
+  const response = await groq.chat.completions.create({
+    model: "llama-3.2-90b-vision-preview",
     messages: [
       {
         role: "user",
@@ -121,7 +133,6 @@ async function processWithTogetherAI(prompt: string, base64Image: string): Promi
     ],
     temperature: 0.2,
     max_tokens: 1000,
-    stream: false,  // Non-streaming response
   });
 
   // Extract the AI response text
