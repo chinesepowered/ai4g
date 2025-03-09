@@ -3,7 +3,7 @@ import Together from 'together-ai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Model selection constant - change this to switch between models
-const VISION_MODEL = 'GEMINI'; // Options: 'TOGETHER' or 'GEMINI'
+const VISION_MODEL = 'TOGETHER'; // Options: 'TOGETHER' or 'GEMINI'
 
 // Define the request type for TypeScript
 type AnalyzeImageRequest = {
@@ -101,7 +101,7 @@ async function processWithTogetherAI(prompt: string, base64Image: string): Promi
 
   // Call Together AI's chat completions API
   const response = await together.chat.completions.create({
-    model: "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
+    model: "meta-llama/Llama-Vision-Free",
     messages: [
       {
         role: "user",
