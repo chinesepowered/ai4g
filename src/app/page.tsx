@@ -19,6 +19,11 @@ export default function Home() {
   const webcamRef = useRef<Webcam>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Define camera constraints to use the back camera
+  const videoConstraints = {
+    facingMode: { exact: "environment" },
+  };
+
   const activateCamera = () => {
     setIsUsingCamera(true);
     setCapturedImage(null);
@@ -110,6 +115,13 @@ export default function Home() {
     }
   };
 
+  // Handle camera errors
+  const handleCameraError = (error) => {
+    console.error('Camera error:', error);
+    setError('Failed to access the camera. Please ensure you have given permission to use the camera and that your device has a back-facing camera.');
+    setIsUsingCamera(false);
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <main className="w-full max-w-md bg-white rounded-lg shadow-lg overflow-hidden">
@@ -132,6 +144,8 @@ export default function Home() {
                 ref={webcamRef}
                 screenshotFormat="image/jpeg"
                 className="w-full rounded-md"
+                videoConstraints={videoConstraints}
+                onUserMediaError={handleCameraError}
               />
               <div className="mt-4 flex justify-center">
                 <button
